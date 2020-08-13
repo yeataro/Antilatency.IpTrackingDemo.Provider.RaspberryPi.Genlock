@@ -353,6 +353,8 @@ int main(int argc, char *argv[]) {
             deviceError += Antilatency::enumToString(ErrorType::SetupGpio) + std::string(" ");
         }
 
+		auto Ping = gpioState.at(params.trigger);
+
         if (true == params.verbose) {
             std::stringstream output{};
             output << "id: " << params.identifier
@@ -363,6 +365,7 @@ int main(int argc, char *argv[]) {
                 output << pin.value;
             }
             for (auto const &pose : poses) {
+
                 output << "\n\t"
                        << "tag: " << ainLibrary.getTagFromRawTag(pose.rawTag)
                        << "; err: "  << Antilatency::enumToString(pose.trackerError)
@@ -372,7 +375,8 @@ int main(int argc, char *argv[]) {
                        << "; rotX: " << pose.rotationX
                        << "; rotY: " << pose.rotationY
                        << "; rotZ: " << pose.rotationZ
-                       << "; rotW: " << pose.rotationW;
+                       << "; rotW: " << pose.rotationW
+					   <<"; Trigger: " << Ping.value;
             }
             output << "\n";
             std::cout << output.str();
@@ -380,7 +384,9 @@ int main(int argc, char *argv[]) {
         }
 
         try {
-            netServer.sendStateMessages(poses, gpioState, deviceError);
+			if (Ping.value){
+            	netServer.sendStateMessages(poses, gpioState, deviceError);
+			}
         } catch (const std::exception &ex) {
             printError(ex.what(), params.verbose);
         }
