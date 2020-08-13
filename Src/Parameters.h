@@ -65,7 +65,7 @@ public:
     std::int32_t waitTime = 200;
     std::string tag{};
     std::vector<GpioPin> gpioPinsDefaultState{};
-	std::int32_t trigger = 0;
+	int trigger = 0;
 };
 
 
@@ -88,7 +88,7 @@ public:
             ("g,gpio",
              "Set initial state of a GPIO pins. Format: 25:output:high,27:input:low (Number:Mode:Value)",
              cxxopts::value<std::string>())
-			("t,trigger", "Read GPIO pin to trigger Tracking. int32_t", cxxopts::value<std::string>())
+			("t,trigger", "Read GPIO pin to trigger Tracking", cxxopts::value<int>())
             ;
 
         cxxopts::ParseResult result = cxxoptsOptions.parse(argc, argv);
@@ -259,7 +259,7 @@ private:
             inParams.gpioPinsDefaultState = parseGpioParameter(pins);
         }
 		if (args.count("trigger") > 0) {
-            inParams.trigger = args["trigger"].as<std::int32_t>();
+            inParams.trigger = args["trigger"].as<int>();
         }
     }
 };
