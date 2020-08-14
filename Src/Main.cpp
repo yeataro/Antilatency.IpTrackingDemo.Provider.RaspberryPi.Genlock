@@ -153,7 +153,25 @@ int main(int argc, char *argv[]) {
     }
 
     while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(params.waitTime));
+
+
+		std::vector<GpioPinState> gpioState{};
+        if (0 == setupGpio) {
+            for (std::size_t index = 0; index < 28; index++) {
+                if (index == 17) {
+                    index = index + 4;
+                }
+                GpioPinState pin;
+                pin.number = index;
+                pin.value = digitalRead(index);
+
+                gpioState.push_back(pin);
+            }
+        }
+
+		auto Ping = gpioState.at(params.trigger);
+
+	if (Ping.value){
 
         try {
             auto commands = netServer.getCommands();
@@ -178,19 +196,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        std::vector<GpioPinState> gpioState{};
-        if (0 == setupGpio) {
-            for (std::size_t index = 0; index < 28; index++) {
-                if (index == 17) {
-                    index = index + 4;
-                }
-                GpioPinState pin;
-                pin.number = index;
-                pin.value = digitalRead(index);
-
-                gpioState.push_back(pin);
-            }
-        }
+       
 
         if (prevEnvCode != params.environmentCode) {
             try {
@@ -353,7 +359,6 @@ int main(int argc, char *argv[]) {
             deviceError += Antilatency::enumToString(ErrorType::SetupGpio) + std::string(" ");
         }
 
-		auto Ping = gpioState.at(params.trigger);
 
         if (true == params.verbose) {
             std::stringstream output{};
@@ -384,13 +389,17 @@ int main(int argc, char *argv[]) {
         }
 
         try {
-			if (Ping.value){
-            	netServer.sendStateMessages(poses, gpioState, deviceError);
-			}
+
+            netServer.sendStateMessages(poses, gpioState, deviceError);
+			
         } catch (const std::exception &ex) {
             printError(ex.what(), params.verbose);
         }
     }
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(params.waitTime));
+
+	}
 
     return 0;
 }
